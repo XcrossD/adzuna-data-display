@@ -5,8 +5,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import styles from '../styles/Home.module.css';
 import Layout from '../components/layout';
-
-const drawerWidth = 240;
+import { drawerWidth } from '../constants';
 
 const Home: NextPage = () => {
   return (
