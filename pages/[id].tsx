@@ -2,7 +2,7 @@ import { GetStaticProps, GetStaticPaths, GetServerSideProps } from 'next';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import Layout from "../components/layout";
-import LineChart from '../components/lineChart';
+import HistoricalData from '../components/historicalData';
 import { getHistoricalData } from '../lib/api';
 import { getAllJobTypeIds } from "../lib/jobType";
 import { Historical } from '../types/data';
@@ -26,7 +26,7 @@ export default function JobType({ historicalDataRaw }: IJobTypeProps) {
         sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
       >
         <Toolbar />
-        <LineChart
+        <HistoricalData
           data={parsedHistoricalData}
           height={500}
           color="steelblue"
