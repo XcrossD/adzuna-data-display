@@ -22,7 +22,7 @@ export default function HistoricalData({
       y={(d: Historical) => d.average}
       height={height}
       xDomainPad={(domain) => {
-        return [d3.utcMonth.offset(domain[0], -1), d3.utcMonth.offset(domain[1], -1)];
+        return [d3.utcMonth.offset(domain[0], -1), d3.utcMonth.offset(domain[1], 1)];
       }}
       yDomainPad={(domain) => {
         return [domain[0] * 0.9, domain[1] * 1.1];
