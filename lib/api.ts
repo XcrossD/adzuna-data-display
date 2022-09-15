@@ -20,3 +20,12 @@ export async function getHistoricalData(jobType: string | string[]) {
       return a.month - b.month;
     });
 }
+
+export async function getHistogramData(jobType: string | string[]) {
+  const url = `${BASE_URL}/us/histogram?app_id=${APP_ID}&app_key=${APP_KEY}&category=${jobType}`;
+  const response = await axios.get(url);
+  const histogramDataRaw = response.data;
+  return Object.entries(histogramDataRaw.histogram)
+    .map(([key, value]) => ({ bin: key, amount: value}))
+    .sort((a, b) => +a.bin - +b.bin);
+}

@@ -5,13 +5,25 @@ export type Category = {
 }
 
 export type Historical = {
-  month: number,
+  month: Date,
   average: number
 }
 
 export type HistoricalRaw = {
   __CLASS__: string,
   month: {
+    [key: string]: number
+  }
+}
+
+export type Histogram = {
+  bin: string,
+  amount: number
+}
+
+export type HistogramRaw = {
+  __CLASS__: string,
+  histogram: {
     [key: string]: number
   }
 }
