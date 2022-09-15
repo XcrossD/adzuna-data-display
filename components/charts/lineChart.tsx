@@ -68,7 +68,10 @@ export default function LineChart({
     // Compute values.
     const X = d3.map(data, x);
     const Y = d3.map(data, y);
+    const O = d3.map(data, d => d);
     const I = d3.range(X.length);
+
+    // Compute which data points are considered defined.
     if (defined === undefined) defined = (d, i) => !isNaN(X[i]) && !isNaN(Y[i]);
     const D = d3.map(data, defined);
 
@@ -91,6 +94,17 @@ export default function LineChart({
     const yScale = yType(yDomain, yRange);
     const xAxis = d3.axisBottom(xScale).ticks(width / 80).tickSizeOuter(0);
     const yAxis = d3.axisLeft(yScale).ticks(height / 40, yFormat);
+
+    // Compute titles.
+    if (title === undefined) {
+      const formatDate = xScale.tickFormat(null, "%B, %Y");
+      const formatValue = yScale.tickFormat(100, yFormat);
+      title = i => `${formatDate(X[i])}\n${formatValue(Y[i])}`;
+    } else {
+      const O = d3.map(data, d => d);
+      const T = title;
+      title = i => T(O[i], i, data);
+    }
     
     const line = d3.line()
       .defined(i => D[i])
@@ -104,34 +118,79 @@ export default function LineChart({
     svg.attr("width", width)
       .attr("height", height)
       .attr("viewBox", [0, 0, width, height])
-      .attr("style", "max-width: 100%; height: auto; height: intrinsic;");
+      .attr("style", "max-width: 100%; height: auto; height: intrinsic;")
+      .attr("font-family", "sans-serif")
+      .attr("font-size", 10)
+      .style("-webkit-tap-highlight-color", "transparent")
+      .style("overflow", "visible")
+      .on("pointerenter pointermove", pointermoved)
+      .on("pointerleave", pointerleft)
+      .on("touchstart", event => event.preventDefault());
 
     svg.append("g")
       .attr("transform", `translate(0,${height - marginBottom})`)
       .call(xAxis);
 
     svg.append("g")
-        .attr("transform", `translate(${marginLeft},0)`)
-        .call(yAxis)
-        .call(g => g.select(".domain").remove())
-        .call(g => g.selectAll(".tick line").clone()
-            .attr("x2", width - marginLeft - marginRight)
-            .attr("stroke-opacity", 0.1))
-        .call(g => g.append("text")
-            .attr("x", -marginLeft)
-            .attr("y", 10)
-            .attr("fill", "currentColor")
-            .attr("text-anchor", "start")
-            .text(yLabel));
+      .attr("transform", `translate(${marginLeft},0)`)
+      .call(yAxis)
+      .call(g => g.select(".domain").remove())
+      .call(g => g.selectAll(".tick line").clone()
+        .attr("x2", width - marginLeft - marginRight)
+        .attr("stroke-opacity", 0.1))
+      .call(g => g.append("text")
+        .attr("x", -marginLeft)
+        .attr("y", 10)
+        .attr("fill", "currentColor")
+        .attr("text-anchor", "start")
+        .text(yLabel));
 
     svg.append("path")
-        .attr("fill", "none")
-        .attr("stroke", color)
-        .attr("stroke-width", strokeWidth)
-        .attr("stroke-linecap", strokeLinecap)
-        .attr("stroke-linejoin", strokeLinejoin)
-        .attr("stroke-opacity", strokeOpacity)
-        .attr("d", line(I));
+      .attr("fill", "none")
+      .attr("stroke", color)
+      .attr("stroke-width", strokeWidth)
+      .attr("stroke-linecap", strokeLinecap)
+      .attr("stroke-linejoin", strokeLinejoin)
+      .attr("stroke-opacity", strokeOpacity)
+      .attr("d", line(I));
+
+    const tooltip = svg.append("g")
+      .style("pointer-events", "none");
+
+    function pointermoved(event) {
+      const i = d3.bisectCenter(X, xScale.invert(d3.pointer(event)[0]));
+      tooltip.style("display", null);
+      tooltip.attr("transform", `translate(${xScale(X[i])},${yScale(Y[i])})`);
+  
+      const path = tooltip.selectAll("path")
+        .data([,])
+        .join("path")
+          .attr("fill", "white")
+          .attr("stroke", "black");
+  
+      const text = tooltip.selectAll("text")
+        .data([,])
+        .join("text")
+        .call(text => text
+          .selectAll("tspan")
+          .data(`${title(i)}`.split(/\n/))
+          .join("tspan")
+            .attr("x", 0)
+            .attr("y", (_, i) => `${i * 1.1}em`)
+            .attr("font-weight", (_, i) => i ? null : "bold")
+            .text(d => d));
+  
+      const {x, y, width: w, height: h} = text.node().getBBox();
+      text.attr("transform", `translate(${-w / 2},${15 - y})`);
+      path.attr("d", `M${-w / 2 - 10},5H-5l5,-5l5,5H${w / 2 + 10}v${h + 20}h-${w + 20}z`);
+      svg.property("value", O[i]).dispatch("input", {bubbles: true});
+    }
+  
+    function pointerleft() {
+      tooltip.style("display", "none");
+      svg.node().value = null;
+      svg.dispatch("input", {bubbles: true});
+    }
     
   }, [data]);
 

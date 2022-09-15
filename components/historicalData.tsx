@@ -27,7 +27,7 @@ export default function HistoricalData({
       yDomainPad={(domain) => {
         return [domain[0] * 0.9, domain[1] * 1.1];
       }}
-      color="steelblue"
+      color={color}
       yLabel="Average Salary ($)"
     />
   )
